@@ -44,9 +44,9 @@
 .macro SAVE_REGISTERS
 	pushfq
 	CFI_ADJUST_CFA_OFFSET(8)
-	subq $240, %rsp
+	subq	$240, %rsp
 	CFI_ADJUST_CFA_OFFSET(240)
-	movq %rbp, 232(%rsp)
+	movq	%rbp, 232(%rsp)
 	movupd	%xmm0, 216(%rsp)
 	movupd	%xmm1, 200(%rsp)
 	movupd	%xmm2, 184(%rsp)
@@ -62,25 +62,25 @@
 	movq	%rcx, 64(%rsp)
 	movq	%r8, 56(%rsp)
 	movq	%r9, 48(%rsp)
-	movq  %r10, 40(%rsp)
-	movq  %r11, 32(%rsp)
-	movq  %r12, 24(%rsp)
-	movq  %r13, 16(%rsp)
-	movq  %r14, 8(%rsp)
-	movq  %r15, 0(%rsp)
+	movq	%r10, 40(%rsp)
+	movq	%r11, 32(%rsp)
+	movq	%r12, 24(%rsp)
+	movq	%r13, 16(%rsp)
+	movq	%r14, 8(%rsp)
+	movq	%r15, 0(%rsp)
 .endm
 
 // This macro should keep the stack aligned to 16 bytes.
 .macro RESTORE_REGISTERS
-	movq  232(%rsp), %rbp
+	movq	232(%rsp), %rbp
 	movupd	216(%rsp), %xmm0
 	movupd	200(%rsp), %xmm1
 	movupd	184(%rsp), %xmm2
 	movupd	168(%rsp), %xmm3
 	movupd	152(%rsp), %xmm4
 	movupd	136(%rsp), %xmm5
-	movupd	120(%rsp) , %xmm6
-	movupd	104(%rsp) , %xmm7
+	movupd	120(%rsp), %xmm6
+	movupd	104(%rsp), %xmm7
 	movq	96(%rsp), %rdi
 	movq	88(%rsp), %rax
 	movq	80(%rsp), %rdx
@@ -88,12 +88,12 @@
 	movq	64(%rsp), %rcx
 	movq	56(%rsp), %r8
 	movq	48(%rsp), %r9
-	movq  40(%rsp), %r10
-	movq  32(%rsp), %r11
-	movq  24(%rsp), %r12
-	movq  16(%rsp), %r13
-	movq  8(%rsp), %r14
-	movq  0(%rsp), %r15
+	movq	40(%rsp), %r10
+	movq	32(%rsp), %r11
+	movq	24(%rsp), %r12
+	movq	16(%rsp), %r13
+	movq	8(%rsp), %r14
+	movq	0(%rsp), %r15
 	addq	$240, %rsp
 	CFI_ADJUST_CFA_OFFSET(-240)
 	popfq
@@ -128,7 +128,7 @@ ASM_SYMBOL(__xray_FunctionEntry):
 
 	// The patched function prologue puts its xray_instr_map index into %r10d.
 	movl	%r10d, %edi
-	xor	%esi,%esi
+	xor	%esi, %esi
 	callq	*%rax
 
 .Ltmp0:
@@ -155,13 +155,14 @@ ASM_SYMBOL(__xray_FunctionExit):
 	// returning.
 	subq	$64, %rsp
 	CFI_ADJUST_CFA_OFFSET(64)
-	movq  %rbp, 48(%rsp)
+	movq	%rbp, 48(%rsp)
 	movupd	%xmm0, 32(%rsp)
 	movupd	%xmm1, 16(%rsp)
 	movq	%rax, 8(%rsp)
 	movq	%rdx, 0(%rsp)
+
 	movq	ASM_SYMBOL(_ZN6__xray19XRayPatchedFunctionE)(%rip), %rax
-	testq %rax,%rax
+	testq	%rax, %rax
 	je	.Ltmp2
 
 	movl	%r10d, %edi
@@ -170,7 +171,7 @@ ASM_SYMBOL(__xray_FunctionExit):
 
 .Ltmp2:
 	// Restore the important registers.
-	movq  48(%rsp), %rbp
+	movq 	48(%rsp), %rbp
 	movupd	32(%rsp), %xmm0
 	movupd	16(%rsp), %xmm1
 	movq	8(%rsp), %rax
@@ -197,7 +198,7 @@ ASM_SYMBOL(__xray_FunctionTailExit):
 	SAVE_REGISTERS
 
 	movq	ASM_SYMBOL(_ZN6__xray19XRayPatchedFunctionE)(%rip), %rax
-	testq %rax,%rax
+	testq	%rax, %rax
 	je	.Ltmp4
 
 	movl	%r10d, %edi
@@ -269,7 +270,7 @@ ASM_SYMBOL(__xray_CustomEvent):
 	// We take two arguments to this trampoline, which should be in rdi	and rsi
 	// already.
 	movq ASM_SYMBOL(_ZN6__xray22XRayPatchedCustomEventE)(%rip), %rax
-	testq %rax,%rax
+	testq %rax, %rax
 	je .LcustomEventCleanup
 
 	callq	*%rax
@@ -295,7 +296,7 @@ ASM_SYMBOL(__xray_TypedEvent):
 	// We pass three arguments to this trampoline, which should be in rdi, rsi
 	// and rdx without our intervention.
 	movq ASM_SYMBOL(_ZN6__xray21XRayPatchedTypedEventE)(%rip), %rax
-	testq %rax,%rax
+	testq %rax, %rax
 	je .LtypedEventCleanup
 
 	callq	*%rax
