@@ -430,7 +430,7 @@ bool FPS::processBasicBlock(MachineFunction &MF, MachineBasicBlock &BB) {
         X86::RFP80RegClass.contains(MI.getOperand(0).getReg()))
       FPInstClass = X86II::SpecialFP;
 
-    if (MI.isCall())
+    if (MI.isCall() && MI.getOpcode() != X86::STACKMAP)
       FPInstClass = X86II::SpecialFP;
 
     if (FPInstClass == X86II::NotFP)
