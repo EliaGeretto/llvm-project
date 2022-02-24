@@ -1453,6 +1453,9 @@ PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level,
   // Convert @llvm.global.annotations to !annotation metadata.
   MPM.addPass(Annotation2MetadataPass());
 
+  for (auto &C : FullLinkTimeOptimizationEarlyEPCallbacks)
+    C(MPM, Level);
+
   // Create a function that performs CFI checks for cross-DSO calls with targets
   // in the current module.
   MPM.addPass(CrossDSOCFIPass());
@@ -1465,6 +1468,9 @@ PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level,
     // Run a second time to clean up any type tests left behind by WPD for use
     // in ICP.
     MPM.addPass(LowerTypeTestsPass(nullptr, nullptr, true));
+
+    for (auto &C : FullLinkTimeOptimizationLastEPCallbacks)
+      C(MPM, Level);
 
     // Emit annotation remarks.
     addAnnotationRemarksPass(MPM);
@@ -1546,6 +1552,9 @@ PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level,
     // in ICP (which is performed earlier than this in the regular LTO
     // pipeline).
     MPM.addPass(LowerTypeTestsPass(nullptr, nullptr, true));
+
+    for (auto &C : FullLinkTimeOptimizationLastEPCallbacks)
+      C(MPM, Level);
 
     // Emit annotation remarks.
     addAnnotationRemarksPass(MPM);
@@ -1717,6 +1726,9 @@ PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level,
 
   if (PTO.MergeFunctions)
     MPM.addPass(MergeFunctionsPass());
+
+  for (auto &C : FullLinkTimeOptimizationLastEPCallbacks)
+    C(MPM, Level);
 
   // Emit annotation remarks.
   addAnnotationRemarksPass(MPM);
