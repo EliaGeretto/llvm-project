@@ -1345,7 +1345,6 @@ template <class ELFT> void splitSections(Ctx &);
 void combineEhSections(Ctx &);
 
 bool hasMemtag(Ctx &);
-bool canHaveMemtagGlobals(Ctx &);
 
 template <typename ELFT> void writeEhdr(Ctx &, uint8_t *buf, Partition &part);
 template <typename ELFT> void writePhdrs(uint8_t *buf, Partition &part);

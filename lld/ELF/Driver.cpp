@@ -3512,7 +3512,7 @@ template <class ELFT> void LinkerDriver::link(opt::InputArgList &args) {
   // partition.
   copySectionsIntoPartitions(ctx);
 
-  if (canHaveMemtagGlobals(ctx)) {
+  if (hasMemtag(ctx)) {
     llvm::TimeTraceScope timeScope("Process memory tagged symbols");
     createTaggedSymbols(ctx);
   }

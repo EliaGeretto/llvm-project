@@ -4318,20 +4318,15 @@ static bool needsInterpSection(Ctx &ctx) {
          !ctx.arg.dynamicLinker.empty() && ctx.script->needsInterpSection();
 }
 
+// MTE globals require that tagged pointers to globals are updated at runtime.
+// This can be done by a dynamic loader (for dynamic executables and shared
+// libraries) or by the binary's own startup code (for self-relocating
+// binaries). Any binary with MTE enabled is permitted to have MTE globals;
+// it is the responsibility of the startup code or dynamic loader to process
+// the MemtagGlobalDescriptors section and apply the necessary relocations.
 bool elf::hasMemtag(Ctx &ctx) {
   return ctx.arg.emachine == EM_AARCH64 &&
          ctx.arg.memtagMode != ELF::NT_MEMTAG_LEVEL_NONE;
-}
-
-// Fully static executables don't support MTE globals at this point in time, as
-// we currently rely on:
-//   - A dynamic loader to process relocations, and
-//   - Dynamic entries.
-// This restriction could be removed in future by re-using some of the ideas
-// that ifuncs use in fully static executables.
-bool elf::canHaveMemtagGlobals(Ctx &ctx) {
-  return hasMemtag(ctx) &&
-         (ctx.arg.relocatable || ctx.arg.shared || needsInterpSection(ctx));
 }
 
 constexpr char kMemtagAndroidNoteName[] = "Android";
@@ -4552,11 +4547,9 @@ template <class ELFT> void elf::createSyntheticSections(Ctx &ctx) {
         part.memtagAndroidNote = std::make_unique<MemtagAndroidNote>(ctx);
         add(*part.memtagAndroidNote);
       }
-      if (canHaveMemtagGlobals(ctx)) {
-        part.memtagGlobalDescriptors =
-            std::make_unique<MemtagGlobalDescriptors>(ctx);
-        add(*part.memtagGlobalDescriptors);
-      }
+      part.memtagGlobalDescriptors =
+          std::make_unique<MemtagGlobalDescriptors>(ctx);
+      add(*part.memtagGlobalDescriptors);
     }
 
     if (ctx.arg.androidPackDynRelocs)

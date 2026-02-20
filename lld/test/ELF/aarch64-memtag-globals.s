@@ -73,9 +73,8 @@ Symbols:
 # RUN:   %t1.o %t2.o -o %t1.so 2>&1 | FileCheck %s --check-prefix=CHECK-DYNRELOC
 # CHECK-DYNRELOC: --apply-dynamic-relocs cannot be used with MTE globals
 
-## Ensure that fully statically linked executables just simply drop the MTE
-## globals stuff: special relocations, data in the place to be relocated,
-## dynamic entries, etc.
+## Ensure that fully statically linked executables have the MTE globals
+## descriptor section, but no dynamic entries or relocations.
 # RUN: llvm-mc --filetype=obj -triple=aarch64-linux-android \
 # RUN:   %t/input_3.s -o %t3.o
 # RUN: ld.lld -static -z memtag-mode=sync --android-memtag-note %t1.o %t2.o %t3.o -o %t.static.so
@@ -83,7 +82,7 @@ Symbols:
 # RUN:   FileCheck %s --check-prefix=CHECK-STATIC
 # CHECK-STATIC-NOT: .memtag.globals.static
 # CHECK-STATIC-NOT: DT_AARCH64_MEMTAG_
-
+# CHECK-STATIC:      .memtag.globals.dynamic AARCH64_MEMTAG_GLOBALS_DYNAMIC
 # CHECK-STATIC:      There are no relocations in this file
 # CHECK-STATIC:      Memtag Dynamic Entries:
 # CHECK-STATIC-NEXT: < none found >
@@ -100,6 +99,16 @@ Symbols:
 # CHECK-STATIC-SPECIAL-RELOCS-NEXT:   .word 0x00000000
 # CHECK-STATIC-SPECIAL-RELOCS-NEXT:   .word 0x00000000
 # CHECK-STATIC-SPECIAL-RELOCS-NEXT:   .word 0x00000000
+
+## Ensure that the generic --memtag-mode flag also produces the MTE globals
+## descriptor section for static executables (non-Android targets).
+# RUN: ld.lld -static --memtag-mode=sync %t1.o %t2.o %t3.o -o %t.static.generic
+# RUN: llvm-readelf --section-headers --memtag %t.static.generic | \
+# RUN:   FileCheck %s --check-prefix=CHECK-STATIC-GENERIC
+# CHECK-STATIC-GENERIC:      .memtag.globals.dynamic AARCH64_MEMTAG_GLOBALS_DYNAMIC
+# CHECK-STATIC-GENERIC:      Memtag Dynamic Entries:
+# CHECK-STATIC-GENERIC-NEXT: < none found >
+# CHECK-STATIC-GENERIC-NOT:  Memtag Android Note
 
 # CHECK:     Symbol table '.dynsym' contains
 # CHECK-DAG: [[#%x,GLOBAL:]] 32 OBJECT GLOBAL DEFAULT [[#]] global{{$}}

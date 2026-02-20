@@ -674,12 +674,12 @@ template <class ELFT> void ObjFile<ELFT>::parse(bool ignoreComdats) {
       }
       break;
     case EM_AARCH64:
-      // Producing a static binary with MTE globals is not currently supported,
-      // remove all SHT_AARCH64_MEMTAG_GLOBALS_STATIC sections as they're unused
-      // medatada, and we don't want them to end up in the output file for
-      // static executables.
-      if (sec.sh_type == SHT_AARCH64_MEMTAG_GLOBALS_STATIC &&
-          !canHaveMemtagGlobals(ctx))
+      // Discard SHT_AARCH64_MEMTAG_GLOBALS_STATIC sections when MTE globals
+      // are not in use. These sections are metadata emitted by the compiler
+      // to describe tagged globals; they are consumed by the linker to
+      // produce the MemtagGlobalDescriptors output section and should not
+      // appear in the final binary.
+      if (sec.sh_type == SHT_AARCH64_MEMTAG_GLOBALS_STATIC && !hasMemtag(ctx))
         sections[i] = &InputSection::discarded;
       break;
     }
